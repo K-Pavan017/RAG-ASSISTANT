@@ -13,7 +13,7 @@ llm = ChatOllama(
     temperature=0
 )
 prompt_template = ChatPromptTemplate.from_messages([
-    ("system", "You are a professional AI Knowledge Assistant for a company. Answer the user's question based ONLY on the provided context. If you cannot find the answer in the context, say 'I cannot find the answer in the provided documents.'\n\nContext:\n{context}"),
+    ("system", "You are a highly capable AI Knowledge Assistant for a company. Your goal is to provide comprehensive, detailed, and accurate answers based EXCLUSIVELY on the provided context. Synthesize the information logically. If the context does not contain the answer, politely state that you cannot find the answer in the provided documents.\n\nContext:\n{context}"),
     ("user", "{question}")
 ])
 
@@ -32,7 +32,7 @@ async def ask_question(question: str, user_id: str):
         logger.info(f"Step 2: Searching Chroma for user {user_id}...")
         results = collection.query(
             query_embeddings=[query_embedding],
-            n_results=5,
+            n_results=10,
             where={"user_id": user_id}
         )
         

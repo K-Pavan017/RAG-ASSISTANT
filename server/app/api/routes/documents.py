@@ -142,3 +142,22 @@ async def debug_documents(current_user: UserInDB = Depends(get_current_user)):
     except Exception as e:
         logger.error(f"Debug error: {e}", exc_info=True)
         return {"error": str(e)}
+
+@router.delete("/{doc_id}")
+async def delete_document(doc_id: str, current_user: UserInDB = Depends(get_current_user)):
+    try:
+        # Delete from MongoDB
+        result = await db.get_db()["documents"].delete_one({"_id": ObjectId(doc_id), "user_id": current_user.id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        # Delete from ChromaDB
+        collection = chroma_client.get_collection()
+        collection.delete(where={"doc_id": doc_id})
+        
+        return {"status": "success", "message": "Document deleted"}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        logger.error(f"Error deleting document {doc_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to delete document")
